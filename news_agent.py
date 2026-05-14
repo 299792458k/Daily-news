@@ -52,12 +52,21 @@ def summarize_news(raw_content):
     return response.text
 
 def send_telegram(text):
-    # Cắt ngắn tin nhắn nếu quá dài (Telegram giới hạn 4096 ký tự)
-    if len(text) > 4000:
-        text = text[:4000] + "..."
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    
+    # Thử gửi với Markdown trước
     payload = {"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}
-    requests.post(url, json=payload)
+    response = requests.post(url, json=payload)
+    
+    # Nếu lỗi (400 Bad Request), gửi lại dưới dạng văn bản thuần
+    if response.status_code != 200:
+        print(f"Markdown lỗi, đang gửi lại dạng text thuần... Lỗi: {response.text}")
+        payload.pop("parse_mode") 
+        retry_response = requests.post(url, json=payload)
+        if retry_response.status_code == 200:
+            print("Đã gửi thành công dạng text thuần!")
+        else:
+            print(f"Thất bại hoàn toàn: {retry_response.text}")
 
 if __name__ == "__main__":
     try:
