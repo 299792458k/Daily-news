@@ -32,13 +32,19 @@ def fetch_news():
 
 def summarize_news(raw_content):
     prompt = f"""
-    Bạn là trợ lý AI tóm tắt tin tức cho Khang (Software Engineer & Investor).
-    Nhiệm vụ: Tóm tắt tin từ CNN, VnExpress, VnEconomy.
-    
-    Yêu cầu:
-    1. Tập trung vào tin kinh tế, chứng khoán (HPG, FPT, VCB) và Tech.
-    2. Mỗi tin tối đa 2 dòng, định dạng Markdown (dùng bullet points).
-    3. Dịch tin CNN sang tiếng Việt.
+    Bạn là biên tập viên tin tức thông minh phục vụ cho Khang (Software Engineer & Investor).
+    Hãy tổng hợp tin tức từ dữ liệu thô dưới đây:
+
+    YÊU CẦU NỘI DUNG:
+    1. 📈 KINH TẾ & CHỨNG KHOÁN: Ưu tiên tối đa HPG, FPT, VCB và thị trường chung.
+    2. 💻 CÔNG NGHỆ: Các cập nhật mới về AI, Full-stack, DevOps.
+    3. 🌐 TIN NỔI BẬT KHÁC: Tổng hợp các sự kiện nóng hổi trong ngày tại Việt Nam.
+    4. 🇺🇸 CNN HIGHLIGHTS: Lọc ra 3-5 tin quan trọng nhất, GIỮ NGUYÊN TIẾNG ANH.
+
+    ĐỊNH DẠNG (BẮT BUỘC):
+    - Dùng bullet points (*), tối đa 10 dòng/tin.
+    - Phân chia section rõ ràng bằng Emoji.
+    - KHÔNG sử dụng các ký tự đặc biệt gây lỗi Markdown ngoại trừ dấu * để in đậm.
     
     Dữ liệu:
     {raw_content}
