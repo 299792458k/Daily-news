@@ -1,0 +1,27 @@
+name: Daily News AI Agent
+on:
+  schedule:
+    - cron: '0 0 * * *' # Chạy lúc 7:00 AM giờ Việt Nam (00:00 UTC)
+  workflow_dispatch:   # Nút bấm chạy thủ công
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run News Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python news_agent.py
