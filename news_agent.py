@@ -62,7 +62,7 @@ if __name__ == "__main__":
         # 1. Liệt kê các model khả dụng để debug lỗi 404
         print("--- Đang kiểm tra danh sách Model ---")
         for m in client.models.list():
-            print(f"Model ID: {m.name}
+            print(f"Model ID: {m.name})
         print("------------------------------------\n")
         # 2. main logic
         raw_news = fetch_news()
