@@ -1,5 +1,5 @@
 import feedparser
-import google.generativeai as genai
+from google import genai
 import requests
 import os
 
@@ -8,10 +8,9 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Sử dụng SDK google-genai mới
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-# 1. Danh sách nguồn RSS
 SOURCES = {
     "VnExpress": "https://vnexpress.net/rss/tin-moi-nhat.rss",
     "VnEconomy": "https://vneconomy.vn/rss/thoi-su.rss",
@@ -23,31 +22,44 @@ def fetch_news():
     for name, url in SOURCES.items():
         feed = feedparser.parse(url)
         news_data += f"\n--- Nguồn: {name} ---\n"
-        # Lấy 5 tin mới nhất mỗi nguồn để tránh quá tải token
         for entry in feed.entries[:5]:
-            news_data += f"Tiêu đề: {entry.title}\n tóm tắt: {entry.summary}\n\n"
+            # Xử lý lỗi AttributeError bằng cách dùng .get()
+            title = entry.get('title', 'Không có tiêu đề')
+            # Thử lấy summary, nếu không có thì lấy description, nếu không có nữa thì để trống
+            summary = entry.get('summary', entry.get('description', 'Xem chi tiết tại link'))
+            news_data += f"Tiêu đề: {title}\n tóm tắt: {summary}\n\n"
     return news_data
 
 def summarize_news(raw_content):
     prompt = f"""
-    Bạn là một trợ lý tin tức thông minh. Hãy tóm tắt các tin tức dưới đây thành một bản tin sáng súc tích.
-    - Phân loại theo chủ đề (Kinh tế, Công nghệ, Thế giới...).
-    - Mỗi tin gồm 1 dòng tiêu đề đậm và 1 dòng tóm tắt ý chính.
-    - Dịch các tin tiếng Anh sang tiếng Việt.
-    - Định dạng bằng Markdown để gửi Telegram.
+    Bạn là biên tập viên tin tức. Tóm tắt nội dung sau:
+    - Phân loại theo chủ đề.
+    - Ưu tiên tin về chứng khoán, công nghệ.
+    - Định dạng Markdown cho Telegram.
     
-    Nội dung thô:
+    Dữ liệu:
     {raw_content}
     """
-    response = model.generate_content(prompt)
+    # Cấu hình theo SDK google-genai mới
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=prompt
+    )
     return response.text
 
 def send_telegram(text):
+    # Cắt ngắn tin nhắn nếu quá dài (Telegram giới hạn 4096 ký tự)
+    if len(text) > 4000:
+        text = text[:4000] + "..."
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": text, "parse_mode": "Markdown"}
     requests.post(url, json=payload)
 
 if __name__ == "__main__":
-    raw_news = fetch_news()
-    summary = summarize_news(raw_news)
-    send_telegram(summary)
+    try:
+        raw_news = fetch_news()
+        summary = summarize_news(raw_news)
+        send_telegram(summary)
+        print("Đã gửi bản tin thành công!")
+    except Exception as e:
+        print(f"Lỗi vận hành: {e}")

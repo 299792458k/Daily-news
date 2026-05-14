@@ -8,15 +8,13 @@ jobs:
   run-agent:
     runs-on: ubuntu-latest
     steps:
-      # Cập nhật từ v3 lên v4 (hoặc bản mới nhất hỗ trợ Node 24)
       - name: Checkout code
         uses: actions/checkout@v4 
 
-      # Cập nhật từ v4 lên v5
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Bạn nên dùng bản 3.11+ cho ổn định
+          python-version: '3.11' # Nâng cấp lên 3.11
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -26,6 +24,4 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-          # Thêm biến này nếu bạn muốn cưỡng bức chạy Node 24 ngay lập tức
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
         run: python news_agent.py
