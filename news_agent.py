@@ -32,17 +32,19 @@ def fetch_news():
 
 def summarize_news(raw_content):
     prompt = f"""
-    Bạn là biên tập viên tin tức. Tóm tắt nội dung sau:
-    - Phân loại theo chủ đề.
-    - Ưu tiên tin về chứng khoán, công nghệ.
+    Bạn là biên tập viên tin tức. Tóm tắt nội dung sau cho Khang (Software Engineer & Investor):
+    - Phân loại chủ đề rõ ràng.
+    - Ưu tiên tin về thị trường chứng khoán (HPG, FPT, VCB) và công nghệ mới.
     - Định dạng Markdown cho Telegram.
     
     Dữ liệu:
     {raw_content}
     """
-    # Cấu hình theo SDK google-genai mới
+    
+    # Sửa tên model thành bản stable nhất của năm 2026
+    # Thử 'gemini-2.0-flash' hoặc 'gemini-1.5-flash' kèm tiền tố
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash", 
         contents=prompt
     )
     return response.text
