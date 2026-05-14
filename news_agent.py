@@ -32,19 +32,21 @@ def fetch_news():
 
 def summarize_news(raw_content):
     prompt = f"""
-    Bạn là biên tập viên tin tức. Tóm tắt nội dung sau cho Khang (Software Engineer & Investor):
-    - Phân loại chủ đề rõ ràng.
-    - Ưu tiên tin về thị trường chứng khoán (HPG, FPT, VCB) và công nghệ mới.
-    - Định dạng Markdown cho Telegram.
+    Bạn là trợ lý AI tóm tắt tin tức cho Khang (Software Engineer & Investor).
+    Nhiệm vụ: Tóm tắt tin từ CNN, VnExpress, VnEconomy.
+    
+    Yêu cầu:
+    1. Tập trung vào tin kinh tế, chứng khoán (HPG, FPT, VCB) và Tech.
+    2. Mỗi tin tối đa 2 dòng, định dạng Markdown (dùng bullet points).
+    3. Dịch tin CNN sang tiếng Việt.
     
     Dữ liệu:
     {raw_content}
     """
     
-    # Sửa tên model thành bản stable nhất của năm 2026
-    # Thử 'gemini-2.0-flash' hoặc 'gemini-1.5-flash' kèm tiền tố
+    # Sử dụng bản Lite để tránh lỗi 429 Resource Exhausted
     response = client.models.generate_content(
-        model="gemini-2.0-flash", 
+        model="gemini-2.0-flash-lite", 
         contents=prompt
     )
     return response.text
