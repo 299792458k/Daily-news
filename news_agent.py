@@ -46,7 +46,7 @@ def summarize_news(raw_content):
     
     # Sử dụng bản Lite để tránh lỗi 429 Resource Exhausted
     response = client.models.generate_content(
-        model="gemini-2.0-flash-lite", 
+        model="gemini-flash-latest", 
         contents=prompt
     )
     return response.text
