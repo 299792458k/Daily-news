@@ -59,6 +59,12 @@ def send_telegram(text):
 
 if __name__ == "__main__":
     try:
+        # 1. Liệt kê các model khả dụng để debug lỗi 404
+        print("--- Đang kiểm tra danh sách Model ---")
+        for m in client.models.list():
+            print(f"Model ID: {m.name} - Supported: {m.supported_methods}")
+        print("------------------------------------\n")
+        # 2. main logic
         raw_news = fetch_news()
         summary = summarize_news(raw_news)
         send_telegram(summary)
