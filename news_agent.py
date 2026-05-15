@@ -48,7 +48,6 @@ def fetch_news():
     return news_data
 
 def summarize_news(raw_content):
-    prompt = f"""
     # Lấy ngày hiện tại để ép AI tập trung
     today = datetime.now().strftime("%d/%m/%Y")
     
