@@ -19,32 +19,50 @@ SOURCES = {
 
 def fetch_news():
     news_data = ""
+    # Lấy mốc thời gian 24h trước
+    yesterday = datetime.now() - timedelta(days=1)
+    
     for name, url in SOURCES.items():
         feed = feedparser.parse(url)
-        news_data += f"\n--- Nguồn: {name} ---\n"
-        for entry in feed.entries[:5]:
-            # Xử lý lỗi AttributeError bằng cách dùng .get()
-            title = entry.get('title', 'Không có tiêu đề')
-            # Thử lấy summary, nếu không có thì lấy description, nếu không có nữa thì để trống
-            summary = entry.get('summary', entry.get('description', 'Xem chi tiết tại link'))
-            news_data += f"Tiêu đề: {title}\n tóm tắt: {summary}\n\n"
+        news_data += f"\n--- SOURCE: {name} ---\n"
+        
+        count = 0
+        for entry in feed.entries:
+            # Lấy thời gian xuất bản của bài báo
+            published_time = entry.get('published_parsed')
+            if published_time:
+                dt_published = datetime.fromtimestamp(time.mktime(published_time))
+                
+                # CHỈ LẤY TIN TRONG 24H QUA
+                if dt_published > yesterday:
+                    title = entry.get('title', '')
+                    desc = entry.get('description', entry.get('summary', ''))[:300]
+                    news_data += f"TITLE: {title}\nCONTENT: {desc}\n\n"
+                    count += 1
+            
+            if count >= 10: # Giới hạn 10 tin mới nhất mỗi nguồn
+                break
+    
+    if not news_data.strip():
+        return "No new articles found in the last 24 hours."
     return news_data
 
 def summarize_news(raw_content):
     prompt = f"""
-    Bạn là biên tập viên tin tức thông minh phục vụ cho Khang (Software Engineer & Investor).
-    Hãy tổng hợp tin tức từ dữ liệu thô dưới đây:
-
-    YÊU CẦU NỘI DUNG:
-    1. 📈 KINH TẾ & CHỨNG KHOÁN: Ưu tiên tối đa HPG, FPT, VCB và thị trường chung.
-    2. 💻 CÔNG NGHỆ: Các cập nhật mới về AI, Full-stack, DevOps.
-    3. 🌐 TIN NỔI BẬT KHÁC: Tổng hợp các sự kiện nóng hổi trong ngày tại Việt Nam.
-    4. 🇺🇸 CNN HIGHLIGHTS: Lọc ra 3-5 tin quan trọng nhất, GIỮ NGUYÊN TIẾNG ANH.
-
-    ĐỊNH DẠNG (BẮT BUỘC):
-    - Dùng bullet points (*), tối đa 10 dòng/tin.
-    - Phân chia section rõ ràng bằng Emoji.
-    - KHÔNG sử dụng các ký tự đặc biệt gây lỗi Markdown ngoại trừ dấu * để in đậm.
+    # Lấy ngày hiện tại để ép AI tập trung
+    today = datetime.now().strftime("%d/%m/%Y")
+    
+    prompt = f"""
+    Hôm nay là ngày {today}. 
+    Dưới đây là dữ liệu thô từ các trang báo. 
+    NHIỆM VỤ:
+    - Tóm tắt dựa TRÊN DUY NHẤT dữ liệu được cung cấp dưới đây. 
+    - Tuyệt đối không sử dụng kiến thức cũ hoặc tự bịa ra tin tức không có trong văn bản.
+    - Nếu dữ liệu thô trống hoặc không có tin mới, hãy báo: "Không có tin tức mới trong 24h qua".
+    
+    QUY TẮC NGÔN NGỮ:
+    - CNN: KEEP ORIGINAL ENGLISH (Tittle & Content).
+    - VNExpress/VnEconomy: Tiếng Việt.
     
     Dữ liệu:
     {raw_content}
